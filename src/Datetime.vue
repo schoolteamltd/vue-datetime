@@ -27,11 +27,14 @@
           :min-datetime="popupMinDatetime"
           :max-datetime="popupMaxDatetime"
           @confirm="confirm"
+          @confirmMulti="confirmMulti"
           @cancel="cancel"
           :auto="auto"
           :week-start="weekStart"
           :flow="flow"
-          :title="title">
+          :title="title"
+          :selected-dates="selectedDates"
+          :multi-date="multiDate">
         <template slot="button-cancel__internal" slot-scope="scope">
           <slot name="button-cancel" v-bind:step="scope.step">{{ phrases.cancel }}</slot>
         </template>
@@ -134,13 +137,22 @@ export default {
     },
     title: {
       type: String
+    },
+    multiDate: {
+      type: Boolean,
+      default: false
+    },
+    multiSeparator: {
+      type: String,
+      default: ','
     }
   },
 
   data () {
     return {
       isOpen: false,
-      datetime: datetimeFromISO(this.value)
+      datetime: datetimeFromISO(this.value),
+      selectedDates: []
     }
   },
 
@@ -156,6 +168,10 @@ export default {
 
   computed: {
     inputValue () {
+      if (this.multiDate) {
+        return this.selectedDates.join(this.multiSeparator)
+      }
+
       let format = this.format
 
       if (!format) {
@@ -192,6 +208,11 @@ export default {
 
   methods: {
     emitInput () {
+      if (this.multiDate) {
+        this.$emit('input', this.selectedDates.join(this.multiSeparator))
+        return
+      }
+
       let datetime = this.datetime ? this.datetime.setZone(this.valueZone) : null
 
       if (datetime && this.type === 'date') {
@@ -211,6 +232,11 @@ export default {
     },
     confirm (datetime) {
       this.datetime = datetime.toUTC()
+      this.emitInput()
+      this.close()
+    },
+    confirmMulti (dates) {
+      this.selectedDates = dates
       this.emitInput()
       this.close()
     },

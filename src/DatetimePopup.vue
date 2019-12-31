@@ -22,12 +22,15 @@
       <datetime-calendar
           v-if="step === 'date'"
           @change="onChangeDate"
+          @multiChange="onChangeSelectedDates"
           :year="year"
           :month="month"
           :day="day"
           :min-date="minDatetime"
           :max-date="maxDatetime"
           :week-start="weekStart"
+          :multi-date="multiDate"
+          :selected-dates="selectedDates"
       ></datetime-calendar>
       <datetime-time-picker
           v-if="step === 'time'"
@@ -122,6 +125,14 @@ export default {
     },
     title: {
       type: String
+    },
+    multiDate: {
+      type: Boolean,
+      default: false
+    },
+    selectedDates: {
+      type: Array,
+      default: []
     }
   },
 
@@ -192,7 +203,11 @@ export default {
       this.timePartsTouched = []
 
       if (this.step === 'end') {
-        this.$emit('confirm', this.newDatetime)
+        if (this.multiDate) {
+          this.$emit('confirmMulti', this.selectedDates)
+        } else {
+          this.$emit('confirm', this.newDatetime)
+        }
       }
     },
     showYear () {
@@ -229,6 +244,9 @@ export default {
       if (this.auto) {
         this.nextStep()
       }
+    },
+    onChangeSelectedDates (dates) {
+      this.selectedDates = dates
     },
     onChangeTime ({ hour, minute, suffixTouched }) {
       if (suffixTouched) {

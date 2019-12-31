@@ -15,7 +15,7 @@
     </div>
     <div class="vdatetime-calendar__month">
       <div class="vdatetime-calendar__month__weekday" v-for="weekday in weekdays">{{ weekday }}</div>
-      <div class="vdatetime-calendar__month__day" v-for="day in days" @click="selectDay(day)" :class="{'vdatetime-calendar__month__day--selected': day.selected, 'vdatetime-calendar__month__day--disabled': day.disabled}">
+      <div class="vdatetime-calendar__month__day" v-for="day in days" @click="selectDay(day)" :class="{'vdatetime-calendar__month__day--selected': isSelected(day), 'vdatetime-calendar__month__day--disabled': day.disabled}">
         <span><span>{{ day.number }}</span></span>
       </div>
     </div>
@@ -54,6 +54,14 @@ export default {
     weekStart: {
       type: Number,
       default: 1
+    },
+    multiDate: {
+      type: Boolean,
+      default: false
+    },
+    selectedDates: {
+      type: Array,
+      default: []
     }
   },
 
@@ -86,6 +94,29 @@ export default {
 
   methods: {
     selectDay (day) {
+      if (day.number == null) {
+        return
+      }
+
+      if (this.multiDate) {
+        const dt = DateTime.fromObject({ year: this.newYear, month: this.newMonth, day: day.number, zone: 'UTC' })
+        const date = DateTime.fromISO(dt).setZone('UTC').toFormat('yyyy-MM-dd')
+
+        const selectedDates = this.selectedDates
+
+        if (selectedDates.indexOf(date) === -1) {
+          selectedDates.push(date)
+        } else {
+          selectedDates.splice(selectedDates.indexOf(date), 1)
+        }
+
+        selectedDates.sort()
+
+        this.$emit('multiChange', selectedDates)
+
+        return
+      }
+
       if (day.disabled) {
         return
       }
@@ -97,6 +128,19 @@ export default {
     },
     nextMonth () {
       this.newDate = this.newDate.plus({ months: 1 })
+    },
+    isSelected (day) {
+      if (day.number === null) {
+        return false
+      }
+
+      if (this.multiDate) {
+        const dt = DateTime.fromObject({ year: this.newYear, month: this.newMonth, day: day.number, zone: 'UTC' })
+        const date = DateTime.fromISO(dt).setZone('UTC').toFormat('yyyy-MM-dd')
+        return this.selectedDates.indexOf(date) !== -1
+      }
+
+      return day.selected
     }
   }
 }
