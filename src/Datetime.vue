@@ -258,6 +258,13 @@ export default {
         datetime = this.popupMaxDatetime.set({ seconds: 0, milliseconds: 0 })
       }
 
+      if (this.multiDate) {
+        if (this.selectedDates.length > 0) {
+          const lastDate = this.selectedDates[this.selectedDates.length - 1]
+          datetime = DateTime.fromFormat(lastDate, 'yyyy-MM-dd')
+        }
+      }
+
       if (this.minuteStep === 1) {
         return datetime
       }
