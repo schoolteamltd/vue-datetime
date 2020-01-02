@@ -158,7 +158,11 @@ export default {
 
   watch: {
     value (newValue) {
-      this.datetime = datetimeFromISO(newValue)
+      if (this.multiDate) {
+        this.selectedDates = newValue.split(this.multiSeparator)
+      } else {
+        this.datetime = datetimeFromISO(newValue)
+      }
     }
   },
 
